@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Varsha Mitra - a GenAI-powered monsoon preparedness and citizen assistance companion." />
+<title>Varsha Mitra — Monsoon Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <canvas id="rainCanvas" aria-hidden="true"></canvas>
+  <div class="lightning-overlay" id="lightningOverlay" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">వర్ష</span>
+      <span class="brand-name">Varsha Mitra</span>
+    </div>
+    <span class="tagline">your monsoon companion</span>
+  </header>
+
+  <div class="location-strip" id="locationStrip" aria-live="polite">
+    <span class="location-strip-inner" id="locationStripInner">
+      <span class="loc-dot" aria-hidden="true"></span>
+      <span id="locationStripText">Detecting your location…</span>
+    </span>
+  </div>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Know before the sky does.</h1>
+        <p class="hero-sub">Tell us who you're protecting. We'll turn today's weather into a plan built for your household — before, during, and after severe weather — not a generic checklist.</p>
+      </div>
+
+      <div class="cloud-scene" aria-hidden="true">
+        <svg class="cloud cloud-back" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg">
+          <path d="M40 80 Q10 80 10 55 Q10 32 34 30 Q38 8 66 8 Q92 8 100 28 Q124 26 132 46 Q158 46 158 68 Q158 80 144 80 Z" fill="#243B58"/>
+        </svg>
+        <svg class="cloud cloud-front" viewBox="0 0 260 130" xmlns="http://www.w3.org/2000/svg">
+          <path d="M48 96 Q14 96 14 66 Q14 38 44 36 Q48 10 82 10 Q114 10 124 34 Q154 32 164 56 Q196 56 196 82 Q196 96 178 96 Z" fill="#2E4A6D"/>
+        </svg>
+        <span class="weather-icon" id="weatherIcon" role="img" aria-label="Current weather condition">🌦️</span>
+      </div>
+    </section>
+
+    <form class="panel" id="formPanel" aria-labelledby="formHeading">
+      <h2 id="formHeading" class="visually-hidden">Generate your monsoon plan</h2>
+
+      <div class="field-group">
+        <label for="locationInput">Location</label>
+        <div class="location-row">
+          <input type="text" id="locationInput" name="location" placeholder="e.g. Koramangala, Bengaluru" value="Bengaluru, India" maxlength="200" required />
+          <button id="useLocationBtn" type="button" class="ghost-btn" aria-describedby="locationHelp">Use my location</button>
+        </div>
+        <span id="locationHelp" class="visually-hidden">Uses your browser's geolocation permission to auto-fill coordinates</span>
+      </div>
+
+      <div class="field-group">
+        <label for="householdInput">Household profile</label>
+        <textarea id="householdInput" name="household" rows="2" maxlength="500" placeholder="e.g. Family of 4 with a toddler and an elderly parent, ground-floor flat near a drain" required>Family of 4 with a toddler and an elderly parent, ground-floor flat near a drain</textarea>
+      </div>
+
+      <fieldset class="field-group phase-group">
+        <legend>Event phase</legend>
+        <div class="radio-row">
+          <label class="radio-pill">
+            <input type="radio" name="phase" value="before" checked />
+            <span>Before</span>
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="phase" value="during" />
+            <span>During</span>
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="phase" value="after" />
+            <span>After</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="languageSelect">Response language</label>
+          <select id="languageSelect" name="language">
+            <option value="English">English</option>
+            <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+            <option value="Hindi">हिन्दी (Hindi)</option>
+          </select>
+        </div>
+
+        <label class="toggle" for="alertToggle">
+          <input type="checkbox" id="alertToggle" name="simulateAlert" />
+          <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Simulate severe alert (demo)</span>
+        </label>
+      </div>
+
+      <button id="generateBtn" type="submit" class="primary-btn">
+        <span class="btn-label">Generate my plan</span>
+        <span class="btn-drop" aria-hidden="true">💧</span>
+      </button>
+      <p class="error-msg" id="errorMsg" role="alert" aria-live="assertive"></p>
+    </form>
+
+    <div class="loading" id="loading" hidden role="status" aria-live="polite">
+      <div class="drop-spinner" aria-hidden="true"></div>
+      <span>Reading the sky…</span>
+    </div>
+
+    <section class="results" id="results" hidden aria-live="polite" aria-labelledby="resultsHeading">
+      <h2 id="resultsHeading" class="visually-hidden">Your monsoon plan</h2>
+
+      <div class="alert-banner" id="alertBanner" role="alert" hidden></div>
+
+      <div class="gauge-row">
+        <div class="gauge-card">
+          <span class="gauge-label">Current signal</span>
+          <span class="gauge-value" id="rainNow">—</span>
+        </div>
+        <div class="gauge-card">
+          <span class="gauge-label">Next 24h rain chance</span>
+          <span class="gauge-value" id="rainChance">—</span>
+        </div>
+        <div class="gauge-card">
+          <span class="gauge-label">3-day total (mm)</span>
+          <span class="gauge-value" id="rainTotal">—</span>
+        </div>
+      </div>
+
+      <article class="result-card headline-card">
+        <h3 id="headlineText"></h3>
+      </article>
+
+      <div class="result-grid">
+        <article class="result-card">
+          <h3>Your preparedness plan</h3>
+          <ul id="planList"></ul>
+        </article>
+
+        <article class="result-card">
+          <h3>Weather guidance</h3>
+          <p id="weatherGuidance"></p>
+        </article>
+
+        <article class="result-card">
+          <h3>Emergency checklist</h3>
+          <ul id="checklistList"></ul>
+        </article>
+
+        <article class="result-card">
+          <h3>Travel advisory</h3>
+          <p id="travelAdvisory"></p>
+          <div class="zone-tags" id="zoneTags"></div>
+        </article>
+
+        <article class="result-card full-width">
+          <h3>Safety recommendations</h3>
+          <ul id="safetyList" class="inline-list"></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Built for PromptWars — Monsoon Preparedness &amp; Citizen Assistance</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
