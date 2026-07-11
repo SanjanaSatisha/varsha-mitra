@@ -55,3 +55,21 @@ Visit `http://localhost:3000`.
 ## Notes
 - `.env` is gitignored — never commit your real API key.
 - Repo is dependency-light and stays well under submission size limits.
+
+
+## Vertical & Problem Alignment
+
+**Chosen vertical: Societal Benefit — Monsoon Preparedness & Citizen Assistance.**
+
+Every feature maps directly to the problem statement:
+- **Personalization** → household profile + live weather + event phase are the three inputs to every generated plan, so no two households get the same output.
+- **"Before / during / after"** → explicitly modeled as `phase`, with distinct AI guidance for each (preparation vs. real-time safety vs. recovery).
+- **Real-world usability** → multilingual output (English/Kannada/Hindi) so the assistant is usable by non-English-speaking citizens in Bengaluru.
+- **Practical, local relevance** → hyperlocal flood-zone travel advisory layered on top of AI guidance.
+
+## Assumptions
+
+- Household profile is self-reported free text (not a structured form) — the AI is trusted to parse composition (infants, elderly, pets) from natural language.
+- Flood-prone zones are a fixed, hardcoded Bengaluru dataset (not live municipal data) — a deliberate scope decision for the hackathon timeframe, documented in `data/floodZones.js`.
+- "Simulated alert" is a manual toggle standing in for a real government alert-feed integration, to demonstrate the alert-generation UX without needing live emergency API access.
+- Weather data (Open-Meteo) is treated as authoritative; no cross-validation against a second weather source.
